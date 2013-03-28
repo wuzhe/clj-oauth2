@@ -1,9 +1,9 @@
 (ns clj-oauth2.client
   (:refer-clojure :exclude [get])
-  (:use [clj-http.client :only [wrap-request]]
-        [clojure.data.json :only [read-json]])
+  (:use [clj-http.client :only [wrap-request]])
   (:require [clj-http.client :as http]
             [clojure.string :as str]
+            [cheshire.core :as json]
             [uri.core :as uri])
   (:import [clj_oauth2 OAuth2Exception OAuth2StateMismatchException]
            [org.apache.commons.codec.binary Base64]))
@@ -64,6 +64,15 @@
         {:client_id client-id
          :client_secret client-secret}}))))
 
+(defn read-json-from-body
+  "convert body to a reader to be compatible with clojure.data.json 0.2.1
+   In case body is a byte array, aka class [B"
+  [body]
+  (if (instance? String body)
+    (json/parse-string body true)
+    (with-open [reader (clojure.java.io/reader body)]
+      (json/parse-stream reader true))))
+
 (defn- request-access-token
   [endpoint params]
   (let [{:keys [access-token-uri access-query-param grant-type]} endpoint
@@ -79,7 +88,7 @@
         body (if (and content-type
                       (or (.startsWith content-type "application/json")
                           (.startsWith content-type "text/javascript"))) ; Facebookism
-               (read-json body)
+               (read-json-from-body body true)
                (uri/form-url-decode body)) ; Facebookism
         error (:error body)]
     (if (or error (not= status 200))
@@ -121,7 +130,7 @@
 
 (defmulti add-access-token-to-request
   (fn [req oauth2]
-    (str/lower-case (:token-type oauth2))))
+    (:token-type oauth2)))
 
 (defmethod add-access-token-to-request
   :default [req oauth2]
@@ -169,7 +178,7 @@
                                           :refresh_token refresh-token
                                           :grant_type "refresh_token"}})]
     (when (= (:status req) 200)
-      (read-json (:body req)))))
+      (read-json-from-body (:body req) true))))
 
 (def request
   (wrap-oauth2 http/request))

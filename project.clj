@@ -1,10 +1,10 @@
 (def dev-dependencies
   '[[ring "1.1.5"]])
 
-(defproject timewarrior/clj-oauth2 "0.5.1"
+(defproject mavericklou/clj-oauth2 "0.5.2"
   :description "clj-http and ring middlewares for OAuth 2.0"
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [org.clojure/data.json "0.1.1"]
+                 [cheshire "5.0.2"]
                  [clj-http "0.5.6"]
                  [uri "1.1.0"]
                  [commons-codec/commons-codec "1.6"]]
