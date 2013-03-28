@@ -1,10 +1,10 @@
 (ns clj-oauth2.client-test
   (:use clojure.test
-        [clojure.data.json :only [json-str]]
         [clojure.pprint :only [pprint]])
   (:require [clj-oauth2.client :as base]
             [ring.adapter.jetty :as ring]
             [uri.core :as uri]
+            [cheshire.core :as json]
             [clojure.string :as str])
   (:import [clj_oauth2 OAuth2Exception OAuth2StateMismatchException]
            [org.apache.commons.codec.binary Base64]))
@@ -94,7 +94,7 @@
                                  "; charset=UTF-8")}
    :body ((if (contains? (:query-params req) :formurlenc)
             uri/form-url-encode
-            json-str)
+            json/generate-string)
           (let [{:keys [access-token
                         token-type
                         expires-in
@@ -135,7 +135,7 @@
       [:post "/token-error"]
       {:status 400
        :headers {"content-type" "application/json"}
-       :body (json-str {:error "unauthorized_client"
+       :body (json/generate-string {:error "unauthorized_client"
                         :error_description "not good"})}
       [:get "/some-resource"]
       (handle-protected-resource req "that's gold jerry!")
