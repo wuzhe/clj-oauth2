@@ -87,7 +87,8 @@
         content-type (headers "content-type")
         body (if (and content-type
                       (or (.startsWith content-type "application/json")
-                          (.startsWith content-type "text/javascript"))) ; Facebookism
+                          (.startsWith content-type "text/javascript") ; Facebookism
+                          (.startsWith content-type "text/html"))) ; Douban
                (read-json-from-body body true)
                (uri/form-url-decode body)) ; Facebookism
         error (:error body)]
